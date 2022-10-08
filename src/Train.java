@@ -4,19 +4,33 @@ import java.util.List;
 
 public class Train {
     private int length;
-    private final List<Point> positions = new ArrayList<>();
+    private final List<Emplacement> emplacements = new ArrayList<>();
 
-    public Train(int length, Point initialPosition) {
+    public  Train(int length, Emplacement initialEmplacement) {
         this.length = length;
-        positions.add(initialPosition);
+        emplacements.add(initialEmplacement);
     }
 
-    public List<Point> getPositions() {
-        return new ArrayList<>(positions);
+    public Emplacement getLocomotivePosition() {
+        if (emplacements.isEmpty()) {
+            throw new IllegalArgumentException("The train has not been placed on the map yet");
+        }
+        return emplacements.get(emplacements.size() - 1);
+    }
+
+    public List<Emplacement> getWagonPositions() {
+        if (emplacements.isEmpty()) {
+            throw new IllegalArgumentException("The train has not been placed on the map yet");
+        }
+        return new ArrayList<>(emplacements.subList(0, emplacements.size() - 1));
+    }
+
+    public boolean isAt(Emplacement emplacement) {
+        return emplacements.stream().anyMatch(p -> p.x == emplacement.x && p.y == emplacement.y);
     }
 
     public boolean isAt(Point point) {
-        return positions.contains(point);
+        return isAt(new Emplacement(point.x, point.y, Direction.UNKNOWN));
     }
 
     public int increaseLength() {
@@ -24,56 +38,50 @@ public class Train {
     }
 
     public void moveLeft() {
-        positions.add(nextLeftPosition());
+        emplacements.add(nextLeftPosition());
         trimPositionsIfRequired();
     }
 
-    public Point nextLeftPosition() {
-        Point lastHeadPosition = getHeadPosition();
-        return new Point(lastHeadPosition.x - 1, lastHeadPosition.y);
+    public Emplacement nextLeftPosition() {
+        Emplacement lastHeadEmplacement = getLocomotivePosition();
+        return new Emplacement(lastHeadEmplacement.x - 1, lastHeadEmplacement.y, Direction.LEFT);
     }
 
     public void moveRight() {
-        positions.add( nextRightPosition());
+        emplacements.add( nextRightPosition());
         trimPositionsIfRequired();
     }
 
-    public Point nextRightPosition() {
-        Point lastHeadPosition = getHeadPosition();
-        return new Point(lastHeadPosition.x + 1, lastHeadPosition.y);
+    public Emplacement nextRightPosition() {
+        Emplacement lastHeadEmplacement = getLocomotivePosition();
+        return new Emplacement(lastHeadEmplacement.x + 1, lastHeadEmplacement.y, Direction.RIGHT);
     }
 
     public void moveUp() {
-        positions.add(nextUpPosition());
+        emplacements.add(nextUpPosition());
         trimPositionsIfRequired();
     }
 
-    public Point nextUpPosition() {
-        Point lastHeadPosition = getHeadPosition();
-        return new Point(lastHeadPosition.x, lastHeadPosition.y - 1);
+    public Emplacement nextUpPosition() {
+        Emplacement lastHeadEmplacement = getLocomotivePosition();
+        return new Emplacement(lastHeadEmplacement.x, lastHeadEmplacement.y - 1, Direction.UP);
     }
 
     public void moveDown() {
-        positions.add(nextDownPosition());
+        emplacements.add(nextDownPosition());
         trimPositionsIfRequired();
     }
 
-    public Point nextDownPosition() {
-        Point lastHeadPosition = getHeadPosition();
-        return new Point(lastHeadPosition.x, lastHeadPosition.y + 1);
+    public Emplacement nextDownPosition() {
+        Emplacement lastHeadEmplacement = getLocomotivePosition();
+        return new Emplacement(lastHeadEmplacement.x, lastHeadEmplacement.y + 1, Direction.DOWN);
     }
 
 
-    public Point getHeadPosition() {
-        if (positions.isEmpty()) {
-            throw new IllegalArgumentException("The train has not been placed on the map yet");
-        }
-        return positions.get(positions.size() - 1);
-    }
-
-    private void trimPositionsIfRequired() {
-        if (positions.size() > length) {
-            positions.remove(0);
+   private void trimPositionsIfRequired() {
+        if (emplacements.size() > length) {
+            emplacements.remove(0);
         }
     }
+
 }

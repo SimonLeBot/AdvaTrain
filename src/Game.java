@@ -1,11 +1,10 @@
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
 
 public class Game extends JPanel implements KeyListener {
-    private static final int BOARD_WIDTH_UNIT = 30;
-    private static final int BOARD_HEIGHT_UNIT = 20;
+    private static final int BOARD_WIDTH_UNIT = 20;
+    private static final int BOARD_HEIGHT_UNIT = 15;
     private static final int TRAIN_LENGTH_UNIT = 5;
 
     private final Board board;
@@ -18,6 +17,8 @@ public class Game extends JPanel implements KeyListener {
 
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         setFocusable(true);
+        final Dimension boardDimensionPixels = board.getDimensionPixels();
+        setPreferredSize(new Dimension(boardDimensionPixels.width + 50, boardDimensionPixels.height + 200));
 
         final JButton restartButton = new JButton(new RestartAction());
         restartButton.setFocusable(false);
@@ -40,7 +41,8 @@ public class Game extends JPanel implements KeyListener {
 
     private void init() {
         target = Target.createRandomTarget(BOARD_WIDTH_UNIT, BOARD_HEIGHT_UNIT);
-        train = new Train(TRAIN_LENGTH_UNIT, new Point(0, 0));
+        train = new Train(TRAIN_LENGTH_UNIT, new Emplacement(0, 0, Direction.RIGHT));
+        board.clearSuccess();
         board.drawTarget(target);
         board.drawTrain(train);
         updateInfoLabel(TRAIN_LENGTH_UNIT);
@@ -61,10 +63,10 @@ public class Game extends JPanel implements KeyListener {
         }
     }
 
-    private boolean isAllowedNewTrainPosition(Point newTrainPosition) {
-        return newTrainPosition.x >= 0 && newTrainPosition.x < BOARD_WIDTH_UNIT &&
-                newTrainPosition.y >= 0 && newTrainPosition.y < BOARD_HEIGHT_UNIT &&
-                !train.isAt(newTrainPosition);
+    private boolean isAllowedNewTrainPosition(Emplacement newTrainEmplacement) {
+        return newTrainEmplacement.x >= 0 && newTrainEmplacement.x < BOARD_WIDTH_UNIT &&
+                newTrainEmplacement.y >= 0 && newTrainEmplacement.y < BOARD_HEIGHT_UNIT &&
+                !train.isAt(newTrainEmplacement);
     }
 
     @Override
@@ -97,7 +99,7 @@ public class Game extends JPanel implements KeyListener {
     }
 
     private void checkIfTargetReached() {
-        if (train.getHeadPosition().equals(target.getTargetLocation())) {
+        if (train.isAt(target.getTargetLocation())) {
             updateInfoLabel(train.increaseLength());
             while (train.isAt(target.getTargetLocation())) {
                 target = Target.createRandomTarget(BOARD_WIDTH_UNIT, BOARD_HEIGHT_UNIT);
